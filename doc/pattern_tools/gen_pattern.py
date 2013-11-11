@@ -25,6 +25,7 @@ class PatternMaker:
     self.width = page_width
     self.height = page_height
     self.g = SVG("g") # the svg group container
+
   def makeCirclesPattern(self):
     spacing = self.square_size
     r = spacing / 5.0 #radius is a 5th of the spacing TODO parameterize
@@ -43,12 +44,15 @@ class PatternMaker:
 
   def makeCheckerboardPattern(self):
     spacing = self.square_size
-    r = spacing / 5.0
-    for x in range(1,self.cols+1):
-      for y in range(1,self.rows+1):
-        #TODO make a checkerboard pattern
-        dot = SVG("circle", cx=x * spacing, cy=y * spacing, r=r, fill="black")
-        self.g.append(dot)
+    xstart = 10
+    ystart = 10
+    for i in range(1,self.cols+1):
+      for j in range(1,self.rows+1):
+        if (i + j) % 2 == 0:
+          square = SVG("rect", x=xstart + (i-1)*spacing, y=ystart + (j-1)*spacing,
+                  width=spacing, height=spacing, stroke="none", fill="black")
+          self.g.append(square)
+
   def save(self):
     c = canvas(self.g,width="%d%s"%(self.width,self.units),height="%d%s"%(self.height,self.units),viewBox="0 0 %d %d"%(self.width,self.height))
     c.inkview(self.output)
