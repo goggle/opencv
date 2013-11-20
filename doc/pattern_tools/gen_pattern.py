@@ -16,7 +16,7 @@ import sys
 import getopt
 
 class PatternMaker:
-  def __init__(self, cols,rows,output,units,square_size,page_width,page_height):
+  def __init__(self, cols,rows,output,units,square_size,page_width,page_height,crop):
     self.cols = cols
     self.rows = rows
     self.output = output
@@ -24,6 +24,7 @@ class PatternMaker:
     self.square_size = square_size
     self.width = page_width
     self.height = page_height
+    self.crop = crop
     self.g = SVG("g") # the svg group container
 
   def makeCirclesPattern(self):
@@ -44,8 +45,10 @@ class PatternMaker:
 
   def makeCheckerboardPattern(self):
     spacing = self.square_size
-    xstart = 10
-    ystart = 10
+    #xstart = 10
+    #ystart = 10
+    xstart = 0
+    ystart = 0
     for i in range(1,self.cols+1):
       for j in range(1,self.rows+1):
         if (i + j) % 2 == 0:
@@ -53,7 +56,14 @@ class PatternMaker:
                   width=spacing, height=spacing, stroke="none", fill="black")
           self.g.append(square)
 
+
   def save(self):
+    if self.crop:
+      #self.width = self.cols * self.square_size + 20
+      #self.height = self.rows * self.square_size + 20
+      self.width = self.cols * self.square_size
+      self.height = self.rows * self.square_size
+      self.units = "px"
     c = canvas(self.g,width="%d%s"%(self.width,self.units),height="%d%s"%(self.height,self.units),viewBox="0 0 %d %d"%(self.width,self.height))
     c.inkview(self.output)
 
@@ -75,9 +85,9 @@ def makePattern(cols,rows,output,p_type,units,square_size,page_width,page_height
 def main():
     # parse command line options, TODO use argparse for better doc
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ho:c:r:T:u:s:w:h:", ["help","output","columns","rows",
+        opts, args = getopt.getopt(sys.argv[1:], "ho:c:r:T:u:s:w:h:p", ["help","output","columns","rows",
                                                                       "type","units","square_size","page_width",
-                                                                      "page_height"])
+                                                                      "page_height","crop"])
     except getopt.error, msg:
         print msg
         print "for help use --help"
@@ -90,6 +100,7 @@ def main():
     square_size = 20.0
     page_width = 216    #8.5 inches
     page_height = 279   #11 inches
+    crop = False
     # process options
     for o, a in opts:
         if o in ("-h", "--help"):
@@ -111,7 +122,9 @@ def main():
             page_width = float(a)
         elif o in ("-h", "--page_height"):
             page_height = float(a)
-    pm = PatternMaker(columns,rows,output,units,square_size,page_width,page_height)
+        elif o in ("-p", "--crop"):
+            crop = True
+    pm = PatternMaker(columns,rows,output,units,square_size,page_width,page_height,crop)
     #dict for easy lookup of pattern type
     mp = {"circles":pm.makeCirclesPattern,"acircles":pm.makeACirclesPattern,"checkerboard":pm.makeCheckerboardPattern}
     mp[p_type]()
